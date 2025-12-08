@@ -4,3 +4,6 @@ langchain-chroma
 pandas
 langgraph
 typing
+dotenv
+streamlit
+langchain-google-genai
