@@ -16,7 +16,6 @@ from IPython.display import Image
 
 model = ChatGoogleGenerativeAI(
     model='gemini-2.5-flash',
-    api_key="AIzaSyC8XLBnEOxn8ABfuQpjW07xztIWnFU2fmE"
 )
 
 class chatbot_state(TypedDict):
