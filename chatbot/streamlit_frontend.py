@@ -6,6 +6,8 @@ configer = {'configurable':{'thread_id':'thread_1'}}
 
 if 'message' not in st.session_state:
     st.session_state['message'] = []
+    
+
 
 for i in st.session_state['message']:
     with st.chat_message(i['role']):

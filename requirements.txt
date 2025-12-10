@@ -7,3 +7,4 @@ typing
 dotenv
 streamlit
 langchain-google-genai
+langchain-openai
