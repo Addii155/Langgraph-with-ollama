@@ -1,8 +1,9 @@
 import streamlit as st
-from backend import workflow
+from backend_tools import workflow
 from langchain_core.messages import HumanMessage
 import uuid
 from give_name_conversation import chatNameResponse
+from backend_tools import get_all_thread_id
 # ******************* Utility Func *************************
 
 def reset_chat():
@@ -33,10 +34,10 @@ if 'message' not in st.session_state:
     st.session_state['message'] = []
 
 if 'thread_history' not in st.session_state:
-    st.session_state['thread_history'] = []
+    st.session_state['thread_history'] = get_all_thread_id()
 
 if 'thread_id' not in st.session_state:
-    st.session_state['thread_id'] = generate_thread_id()
+    st.session_state['thread_id'] = st.session_state['thread_history'][-1] if st.session_state['thread_history'] else generate_thread_id()
     
 if 'thread_name' not in st.session_state:
     st.session_state['thread_name'] = []
@@ -53,11 +54,11 @@ st.sidebar.title('My conversations')
 add_threadid(st.session_state['thread_id'])
 
 for thread in st.session_state['thread_history']:
-    threadName = 'New Chat'
-    for name in st.session_state['thread_name']:
-        if thread in name:
-            threadName = name[thread]
-    if st.sidebar.button(str(threadName),key=thread):
+    # threadName = 'New Chat'
+    # for name in st.session_state['thread_name']:
+    #     if thread in name:
+    #         threadName = name[thread]
+    if st.sidebar.button(str(thread),key=thread):
         msg = load_conversation(thread)
         formate_msg =[]
         for i in msg:
@@ -81,8 +82,8 @@ inp = st.chat_input('ask anything')
 configer = {'configurable':{'thread_id':st.session_state['thread_id']}}
 
 if inp:
-    if st.session_state['message'] ==[]:
-        st.session_state['thread_name'].append({st.session_state['thread_id']:chatNameResponse.invoke({'message':inp})['message']})
+    # if st.session_state['message'] ==[]:
+    #     st.session_state['thread_name'].append({st.session_state['thread_id']:chatNameResponse.invoke({'message':inp})['message']})
     st.session_state['message'].append({'role':'user','content':inp})
     with st.chat_message('user'):
         st.text(inp)

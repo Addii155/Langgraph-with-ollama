@@ -4,17 +4,38 @@ from langchain_core.messages import BaseMessage , HumanMessage
 from langgraph.checkpoint.sqlite import SqliteSaver;
 from typing import TypedDict,Annotated
 from langchain_openai import ChatOpenAI
+from langgraph.prebuilt import tools_condition,ToolNode
 import sqlite3
+from langchain_community.tools import DuckDuckGoSearchRun
 from dotenv import load_dotenv
-
+from langchain_core.tools import tool
+import requests
 
 load_dotenv()
 
+#  LLM 
+model = ChatOpenAI()
+
+#  Tools 
+
+search_tool = DuckDuckGoSearchRun()
+
+@tool
+def get_stock_price(symbol:str):
+    """"Get the current stock price for a given symbol.(e.g, 'AAPL' for Apple Inc. , 'TSLA' for Tesla Inc.)"""
+    STOCK_API_KEY = load_dotenv()
+    query_url = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={STOCK_API_KEY}'
+    res = requests.get(query_url)
+    print(res.json())
+
+tools = [search_tool,get_stock_price]
+
+
+llm_with_tools = model.bind_tools(tools)
+
+
 connection= sqlite3.connect('chatbot.db',check_same_thread=False)
 
-from IPython.display import Image
-
-model = ChatOpenAI()
 
 class chatbot_state(TypedDict):
     
@@ -24,15 +45,20 @@ class chatbot_state(TypedDict):
 def chatNode(state:chatbot_state):
     
     question =  state['message']
-    res  = model.invoke(question)
+    res  = llm_with_tools.invoke(question)
     return {'message':[res]}
 
 chatbot= StateGraph(chatbot_state)
 
-chatbot.add_node('chatNode', chatNode)
+tool_node= ToolNode(tools)
 
-chatbot.add_edge(START,'chatNode')
-chatbot.add_edge('chatNode',END)
+chatbot.add_node("chatNode", chatNode)
+chatbot.add_node("tools", tool_node)
+
+chatbot.add_edge(START,"chatNode")
+chatbot.add_conditional_edges("chatNode",tools_condition)
+# chatbot.add_edge("tools",END)
+chatbot.add_edge("chatNode",END)
 
 checkPointer = SqliteSaver(conn=connection)
 

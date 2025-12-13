@@ -8,3 +8,5 @@ dotenv
 streamlit
 langchain-google-genai
 langchain-openai
+langgraph-checkpoint-sqlite
+langchain_community
